@@ -72,7 +72,7 @@ public:
 
 Tone tone( 1, 500, 1000 );
 
-extern "C" {
+//extern "C" {
 static int callback( const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* timing_info, const PaStreamCallbackFlags flags, void *data ) {
 
   float *buffer = (float*)out_buff;
@@ -86,7 +86,7 @@ static int callback( const void* in_buff, void* out_buff, unsigned long frames_p
 
   return 0;
 }
-}
+//}
 
 
 int main( int arch, char** argv ) {
