@@ -1,7 +1,96 @@
 
 #include <stdio.h>
+#include <math.h>
 
 #include "audio.hh"
+
+using namespace std;
+
+#define CATCH_PA_ERROR( func, err ) if( (err) != paNoError ) throw AudioException( (func), (err) );
+
+/*
+ * audio exception class
+ *
+ */
+
+AudioException::AudioException( const char* f, PaError e ) : exception() {
+  m_function = f;
+  m_pa_error = e;
+}
+
+//AudioException::~AudioException() {}
+
+const std::string& AudioException::function() const {
+  return m_function;
+}
+
+std::string AudioException::message() const {
+  return string(Pa_GetErrorText(m_pa_error));
+}
+
+
+/* 
+ * Tone class
+ *
+ */
+
+Tone::Tone() : m_waveform( vector<float>() ) {
+  m_volume      = 0;
+  m_pitch       = 0;
+  m_duration    = 0;
+  m_sample_rate = 0;
+}
+
+
+Tone::Tone( const vector<float> &wf, int sr, float v, int p, int d ) : m_waveform(wf) {
+
+  m_sample_rate = sr;
+
+  m_volume      = v;
+  m_pitch       = p;
+  m_duration = (1.0 / (float)m_sample_rate) * (float)d;
+}
+
+float Tone::value_at( int pos ) const {
+  return m_waveform[ pos ] * m_volume;
+}
+
+int Tone::duration() const {
+  return m_duration;
+}
+
+boost::shared_ptr<ToneCursor> Tone::cursor_start() {
+  return boost::shared_ptr<ToneCursor>( new ToneCursor( *this ) );
+}
+
+// Tone Cursor - the 'playback head' for tones.
+
+ToneCursor::ToneCursor() : m_tone(Tone()) {
+  m_position = 0;
+}
+
+ToneCursor::ToneCursor( const Tone &tone ) : m_tone(tone) { 
+  m_position = 0; 
+}
+
+float ToneCursor::next_value() {
+
+  float v = m_tone.value_at( m_position );
+  m_position++;
+  return v;
+}
+
+bool ToneCursor::is_at_end() {
+  return m_position >= m_tone.duration();
+}
+
+
+
+
+/*
+ * Audio class
+ *
+ */
 
 const int Audio::c_sample_rate  = 44100;
 const int Audio::c_num_channels = 1;
@@ -13,8 +102,7 @@ int audio_callback( const void* in_b, void* out_b, unsigned long len, const PaSt
   float *buffer = (float*)out_b;
 
   return audio->callback( buffer, len ); 
-}
-
+} 
 
 Audio::Audio() {
   m_stream = NULL;
@@ -25,7 +113,28 @@ Audio::~Audio() {
   PaError err;
 
   err = Pa_Terminate();
-  if( err != paNoError ) throw "Pa_Terminate failed";
+  CATCH_PA_ERROR( "Pa_Terminate", err );
+}
+
+int Audio::callback( float* buffer, unsigned long buffer_size ) {
+
+  if( m_tone_iterator == m_tone_queue.end() ) return 0;
+
+  for( int i = 0; i < buffer_size; i++ ) {
+
+    *buffer = m_cursor->next_value();
+
+    if( m_cursor->is_at_end() ) {
+
+      m_tone_iterator++;
+
+      if( m_tone_iterator == m_tone_queue.end() ) return 0;
+
+      m_cursor = m_tone_iterator->cursor_start();
+    }
+  }
+
+  return 0;
 }
 
 void Audio::init() {
@@ -33,7 +142,7 @@ void Audio::init() {
   PaError err;
 
   err = Pa_Initialize();
-  if( err != paNoError ) throw "initializing port audio";
+  CATCH_PA_ERROR( "Pa_Initialize", err );
 
   err = Pa_OpenDefaultStream(
       &m_stream,
@@ -42,26 +151,142 @@ void Audio::init() {
       c_data_type,
       c_sample_rate,
       paFramesPerBufferUnspecified,
-     audio_callback,
+      audio_callback,
       this
       );
 
-  if( err != paNoError ) throw "opening stream";
+  CATCH_PA_ERROR( "Pa_OpenDefaultStream", err ); 
+
+  const PaStreamInfo *stream_info = Pa_GetStreamInfo(m_stream);
+  //if( !stream_info ) throw AudioException( "Pa_GetStreamInfo", 0 );
+  m_sample_rate = stream_info->sampleRate; 
+  
+  m_sine_wave.resize(m_sample_rate);
+  float a_inc = (M_PI * 2.0) / stream_info->sampleRate;
+  float ang   = 0;
+
+  for( int i = 0; i < (int)stream_info->sampleRate; i++ ) {
+    m_sine_wave[i] = sin(ang); 
+    ang += a_inc;
+  }
 }
 
 void Audio::start() {
 
-  PaError err;
+  m_tone_iterator = m_tone_queue.begin();
+  m_cursor = m_tone_iterator->cursor_start();
 
-  err = Pa_StartStream(m_stream);
-  if( err != paNoError ) throw "starting stream"; 
+  PaError err = Pa_StartStream(m_stream);
+  CATCH_PA_ERROR( "Pa_StartStream", err ); 
 }
 
 void Audio::stop() {
-
-  PaError err;
-
-  err = Pa_StopStream(m_stream);
-  if( err != paNoError ) throw "stopping stream";
+  PaError err = Pa_StopStream(m_stream);
+  CATCH_PA_ERROR( "Pa_StopStream", err );
 }
+
+bool Audio::is_busy() {
+
+  return m_tone_iterator != m_tone_queue.end();
+}
+
+void Audio::beep( float vol, int pitch, int msec ) { 
+  m_tone_queue.push_back( Tone( m_sine_wave, m_sample_rate, vol, pitch, msec )); 
+}
+
+#if 0
+class Tone {
+private:
+
+  float m_volume;
+  int m_pitch;
+  int m_duration; // milliseconds
+
+  int m_position;
+public:
+
+  Tone( float v, int p, int d ) {
+    m_volume   = v;
+    m_pitch    = p;
+    //m_duration = (1.0 / m_channel_sample_rate) * d;
+    m_duration = (1.0 / (float)c_sample_rate) * (float)d;
+
+    m_position = 0;
+  }
+
+  float value() {
+
+    float v;
+
+    if( is_done() ) return 0;
+
+    v = sine_wave[ m_position ] * m_volume;
+
+    m_position += m_pitch;
+    if( m_position >= wave_len ) m_position -= wave_len ;
+
+    return v;
+  }
+
+  bool is_done() {
+    return m_position >= m_duration;
+  }
+};
+
+Tone tone( 1, 500, 1000 );
+
+//extern "C" {
+static int callback( const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* timing_info, const PaStreamCallbackFlags flags, void *data ) {
+
+  float *buffer = (float*)out_buff;
+
+  for( unsigned int i = 0; i < frames_per_buffer; i++) {
+    
+    *buffer = tone.value();
+
+    buffer++;
+  }
+
+  return 0;
+}
+//}
+
+
+    err = Pa_Initialize();
+    if( err != paNoError ) throw "initializing port audio";
+
+    err = Pa_OpenDefaultStream(
+        &stream,
+        0,
+        c_num_channels,
+        c_data_type,
+        c_sample_rate,
+        paFramesPerBufferUnspecified,
+        callback,
+        NULL
+        );
+
+    if( err != paNoError ) throw "opening stream";
+
+    stream_info = Pa_GetStreamInfo(stream);
+    if( !stream_info ) throw "getting stream info";
+    
+    g_channel_sample_rate = stream_info->sampleRate;
+
+    cout << "sample rate " << stream_info->sampleRate << endl;
+
+    sine_wave.resize(g_channel_sample_rate);
+    float a_inc = (M_PI * 2.0) / stream_info->sampleRate;
+    float ang   = 0;
+
+    for( int i = 0; i < (int)stream_info->sampleRate; i++ ) {
+      sine_wave[i] = 0.5 + 0.5 * sin(ang); 
+      ang += a_inc;
+    }
+
+    wave_len = sine_wave.size(); 
+
+    err = Pa_StartStream(stream);
+    if( err != paNoError ) throw "starting stream"; 
+#endif
 
