@@ -48,15 +48,22 @@ Tone::Tone( const vector<float> &wf, int sr, float v, int p, int d ) : m_wavefor
 
   m_volume      = v;
   m_pitch       = p;
-  m_duration = (1.0 / (float)m_sample_rate) * (float)d;
+  m_duration = (float)d / 1000.0 * (float)m_sample_rate;
+
+  cout << "Tone( t=" << m_pitch << "  dur=" << m_duration << ")" << endl;
 }
 
 float Tone::value_at( int pos ) const {
-  return m_waveform[ pos ] * m_volume;
+  int rp = pos % m_waveform.size();
+  return m_waveform[ rp ] * m_volume;
 }
 
 int Tone::duration() const {
   return m_duration;
+}
+
+int Tone::pos_inc() const {
+  return m_pitch;
 }
 
 boost::shared_ptr<ToneCursor> Tone::cursor_start() {
@@ -67,16 +74,19 @@ boost::shared_ptr<ToneCursor> Tone::cursor_start() {
 
 ToneCursor::ToneCursor() : m_tone(Tone()) {
   m_position = 0;
+  m_wave_pos = 0;
 }
 
 ToneCursor::ToneCursor( const Tone &tone ) : m_tone(tone) { 
-  m_position = 0; 
+  m_position = 0;
+  m_wave_pos = 0;
 }
 
 float ToneCursor::next_value() {
 
-  float v = m_tone.value_at( m_position );
+  float v = m_tone.value_at( m_wave_pos ); 
   m_position++;
+  m_wave_pos += m_tone.pos_inc();
   return v;
 }
 
@@ -131,7 +141,11 @@ int Audio::callback( float* buffer, unsigned long buffer_size ) {
       if( m_tone_iterator == m_tone_queue.end() ) return 0;
 
       m_cursor = m_tone_iterator->cursor_start();
+
+      cout << "next tone" << endl;
     }
+
+    buffer++;
   }
 
   return 0;
@@ -165,10 +179,12 @@ void Audio::init() {
   float a_inc = (M_PI * 2.0) / stream_info->sampleRate;
   float ang   = 0;
 
-  for( int i = 0; i < (int)stream_info->sampleRate; i++ ) {
+  for( int i = 0; i < m_sample_rate; i++ ) {
     m_sine_wave[i] = sin(ang); 
     ang += a_inc;
   }
+
+  cout << "sample_rate=" << m_sample_rate << endl;
 }
 
 void Audio::start() {
@@ -193,100 +209,4 @@ bool Audio::is_busy() {
 void Audio::beep( float vol, int pitch, int msec ) { 
   m_tone_queue.push_back( Tone( m_sine_wave, m_sample_rate, vol, pitch, msec )); 
 }
-
-#if 0
-class Tone {
-private:
-
-  float m_volume;
-  int m_pitch;
-  int m_duration; // milliseconds
-
-  int m_position;
-public:
-
-  Tone( float v, int p, int d ) {
-    m_volume   = v;
-    m_pitch    = p;
-    //m_duration = (1.0 / m_channel_sample_rate) * d;
-    m_duration = (1.0 / (float)c_sample_rate) * (float)d;
-
-    m_position = 0;
-  }
-
-  float value() {
-
-    float v;
-
-    if( is_done() ) return 0;
-
-    v = sine_wave[ m_position ] * m_volume;
-
-    m_position += m_pitch;
-    if( m_position >= wave_len ) m_position -= wave_len ;
-
-    return v;
-  }
-
-  bool is_done() {
-    return m_position >= m_duration;
-  }
-};
-
-Tone tone( 1, 500, 1000 );
-
-//extern "C" {
-static int callback( const void* in_buff, void* out_buff, unsigned long frames_per_buffer, const PaStreamCallbackTimeInfo* timing_info, const PaStreamCallbackFlags flags, void *data ) {
-
-  float *buffer = (float*)out_buff;
-
-  for( unsigned int i = 0; i < frames_per_buffer; i++) {
-    
-    *buffer = tone.value();
-
-    buffer++;
-  }
-
-  return 0;
-}
-//}
-
-
-    err = Pa_Initialize();
-    if( err != paNoError ) throw "initializing port audio";
-
-    err = Pa_OpenDefaultStream(
-        &stream,
-        0,
-        c_num_channels,
-        c_data_type,
-        c_sample_rate,
-        paFramesPerBufferUnspecified,
-        callback,
-        NULL
-        );
-
-    if( err != paNoError ) throw "opening stream";
-
-    stream_info = Pa_GetStreamInfo(stream);
-    if( !stream_info ) throw "getting stream info";
-    
-    g_channel_sample_rate = stream_info->sampleRate;
-
-    cout << "sample rate " << stream_info->sampleRate << endl;
-
-    sine_wave.resize(g_channel_sample_rate);
-    float a_inc = (M_PI * 2.0) / stream_info->sampleRate;
-    float ang   = 0;
-
-    for( int i = 0; i < (int)stream_info->sampleRate; i++ ) {
-      sine_wave[i] = 0.5 + 0.5 * sin(ang); 
-      ang += a_inc;
-    }
-
-    wave_len = sine_wave.size(); 
-
-    err = Pa_StartStream(stream);
-    if( err != paNoError ) throw "starting stream"; 
-#endif
 

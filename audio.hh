@@ -44,6 +44,7 @@ public:
 
   float value_at(int) const;
   int duration() const;
+  int pos_inc() const;
 
   boost::shared_ptr<ToneCursor> cursor_start();
 };
@@ -53,6 +54,7 @@ private:
 
   const Tone &m_tone;
   int m_position;
+  int m_wave_pos;
 
 public:
 
