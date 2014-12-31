@@ -37,12 +37,17 @@ private:
   int m_pitch;
   int m_duration; // milliseconds
 
+  int m_start_taper;
+  int m_stop_taper;
+  float m_taper_value;
+  float m_taper_inc;
+
 public:
 
   Tone();
   Tone( const std::vector<float>&, int, float, int, int );
 
-  float value_at(int) const;
+  float value_at( int, int) const;
   int duration() const;
   int pos_inc() const;
 

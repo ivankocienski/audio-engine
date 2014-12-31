@@ -48,14 +48,44 @@ Tone::Tone( const vector<float> &wf, int sr, float v, int p, int d ) : m_wavefor
 
   m_volume      = v;
   m_pitch       = p;
-  m_duration = (float)d / 1000.0 * (float)m_sample_rate;
 
-  cout << "Tone( t=" << m_pitch << "  dur=" << m_duration << ")" << endl;
+  float m = (float)d / 1000.0;
+
+
+  m_duration = m * (float)m_sample_rate;
+
+  int taper_len = m * 20.0; // 10ms
+
+  m_start_taper = taper_len;
+  m_stop_taper  = m_duration - taper_len;
+  m_taper_value = 0;
+  m_taper_inc   = 1.0 / (float)taper_len;
+
+  cout << "m_taper_inc=" << m_taper_inc << endl;
+  cout << "m_start_taper=" << m_start_taper << endl;
+  cout << "m_stop_taper=" << m_stop_taper << endl;
+
 }
 
-float Tone::value_at( int pos ) const {
-  int rp = pos % m_waveform.size();
-  return m_waveform[ rp ] * m_volume;
+float Tone::value_at( int tone_pos, int wave_pos ) const {
+
+  int rp = wave_pos % m_waveform.size();
+
+  float v = m_waveform[ rp ] * m_volume;
+
+  if( tone_pos < m_start_taper ) { 
+    float vv = (float)tone_pos * (float)m_taper_inc; 
+    v *= vv;
+    //cout << "start " << vv << endl;
+  }
+
+  if( tone_pos >= m_stop_taper ) {
+    float vv = (float)(m_duration - tone_pos) * (float)m_taper_inc; 
+    v *= vv;
+   // cout << "stop" << vv << endl;
+  }
+
+  return v;
 }
 
 int Tone::duration() const {
@@ -84,7 +114,7 @@ ToneCursor::ToneCursor( const Tone &tone ) : m_tone(tone) {
 
 float ToneCursor::next_value() {
 
-  float v = m_tone.value_at( m_wave_pos ); 
+  float v = m_tone.value_at( m_position, m_wave_pos ); 
   m_position++;
   m_wave_pos += m_tone.pos_inc();
   return v;
