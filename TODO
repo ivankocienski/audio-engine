@@ -2,6 +2,11 @@
 todo:
 
 * tone fade in / out
+- organize
 - channels
 - sound 'sprites'
 - looping / stopping
+- clean up code
+  - namespace
+  - synth code. blugh
+

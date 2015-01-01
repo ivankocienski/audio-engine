@@ -1,7 +1,6 @@
 
 #include <iostream>
 
-#include <portaudio.h>
 
 #include "audio.hh"
 
@@ -11,7 +10,7 @@ int main( int arch, char** argv ) {
 
   try {
 
-    Audio audio;
+    AudioService audio;
 
     audio.init();
 
