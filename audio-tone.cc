@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Tone::Tone() : m_waveform( vector<float>() ) {
+AudioTone::AudioTone() : m_waveform( NULL ) {
   m_volume      = 0;
   m_pitch       = 0;
   m_duration    = 0;
@@ -11,7 +11,7 @@ Tone::Tone() : m_waveform( vector<float>() ) {
 }
 
 
-Tone::Tone( const vector<float> &wf, int sr, float v, int p, int d ) : m_waveform(wf) {
+AudioTone::AudioTone( const audio_waveform_t *wf, int sr, float v, int p, int d ) : m_waveform(wf) {
 
   m_sample_rate = sr;
 
@@ -36,11 +36,11 @@ Tone::Tone( const vector<float> &wf, int sr, float v, int p, int d ) : m_wavefor
 
 }
 
-float Tone::value_at( int tone_pos, int wave_pos ) const {
+float AudioTone::value_at( int tone_pos, int wave_pos ) const {
 
-  int rp = wave_pos % m_waveform.size();
+  int rp = wave_pos % m_waveform->size();
 
-  float v = m_waveform[ rp ] * m_volume;
+  float v = m_waveform->at(rp) * m_volume;
 
   if( tone_pos < m_start_taper ) { 
     float vv = (float)tone_pos * (float)m_taper_inc; 
@@ -57,26 +57,26 @@ float Tone::value_at( int tone_pos, int wave_pos ) const {
   return v;
 }
 
-int Tone::duration() const {
+int AudioTone::duration() const {
   return m_duration;
 }
 
-int Tone::pos_inc() const {
+int AudioTone::pos_inc() const {
   return m_pitch;
 }
 
-boost::shared_ptr<ToneCursor> Tone::cursor_start() {
+boost::shared_ptr<ToneCursor> AudioTone::cursor_start() {
   return boost::shared_ptr<ToneCursor>( new ToneCursor( *this ) );
 }
 
-// Tone Cursor - the 'playback head' for tones.
+// AudioTone Cursor - the 'playback head' for tones.
 
-ToneCursor::ToneCursor() : m_tone(Tone()) {
+ToneCursor::ToneCursor() : m_tone(AudioTone()) {
   m_position = 0;
   m_wave_pos = 0;
 }
 
-ToneCursor::ToneCursor( const Tone &tone ) : m_tone(tone) { 
+ToneCursor::ToneCursor( const AudioTone &tone ) : m_tone(tone) { 
   m_position = 0;
   m_wave_pos = 0;
 }

@@ -6,8 +6,6 @@
 
 #include <portaudio.h>
 
-#include "audio-exception.hh"
-
 class AudioException : public std::exception {
 private:
 

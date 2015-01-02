@@ -1,15 +1,18 @@
 
+#pragma once
+
 #include <vector>
 #include <boost/shared_ptr.hpp>
 
 //#include "audio.hh"
+#include "audio-common.hh"
 
 class ToneCursor;
 
-class Tone {
+class AudioTone {
 private:
 
-  const std::vector<float> &m_waveform;
+  const audio_waveform_t *m_waveform;
   int m_sample_rate;
 
   float m_volume;
@@ -23,8 +26,8 @@ private:
 
 public:
 
-  Tone();
-  Tone( const std::vector<float>&, int, float, int, int );
+  AudioTone();
+  AudioTone( const audio_waveform_t *, int, float, int, int );
 
   float value_at( int, int) const;
   int duration() const;
@@ -36,14 +39,14 @@ public:
 class ToneCursor {
 private:
 
-  const Tone &m_tone;
+  const AudioTone &m_tone;
   int m_position;
   int m_wave_pos;
 
 public:
 
   ToneCursor();
-  ToneCursor( const Tone& );
+  ToneCursor( const AudioTone& );
 
   float next_value();
   bool is_at_end();

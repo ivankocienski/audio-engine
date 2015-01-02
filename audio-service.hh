@@ -7,7 +7,7 @@
 
 #include <portaudio.h>
 
-#include "audio-tone.hh"
+#include "audio-channel.hh"
 
 //#include "audio.hh"
 
@@ -16,17 +16,21 @@ private:
 
   PaStream *m_stream;
 
-  std::vector<float> m_sine_wave;
+  std::vector<AudioChannel> m_channels;
 
-  std::list<Tone> m_tone_queue;
-  std::list<Tone>::iterator m_tone_iterator;
+  std::vector<audio_waveform_t> m_waveforms;
 
-  boost::shared_ptr<ToneCursor> m_cursor;
+  //std::vector<float> m_sine_wave;
 
-  int m_sample_rate;
-  
 
 public:
+
+  enum { // waveform
+    WF_SINE,
+    WF_SQUARE,
+    WF_NOISE,
+    WF_COUNT
+  };
 
   static const int c_sample_rate;
   static const int c_num_channels;
@@ -41,7 +45,7 @@ public:
 
   bool is_busy();
 
-  void beep( float, int, int );
+  void beep( int, int, float, int, int );
 
   friend int audio_callback( const void*, void*, unsigned long, PaStreamCallbackTimeInfo*, const PaStreamCallbackFlags, void*);
 
