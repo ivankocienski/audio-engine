@@ -14,19 +14,27 @@ int main( int arch, char** argv ) {
 
     audio.init();
 
-    // channel, wave, volume, pitch, ms
     
-    for( int i = 0; i < 10; i++ ) {
-      audio.beep( 0, AudioService::WF_SINE, 1.0, 1000, 50 );
-      audio.beep( 0, AudioService::WF_SINE, 0.9, 1100, 50 );
-      audio.beep( 0, AudioService::WF_SINE, 0.8, 1200, 50 );
-      audio.beep( 0, AudioService::WF_SINE, 0.7, 1300, 50 );
-      audio.beep( 0, AudioService::WF_SINE, 0.6, 1400, 50 );
-      audio.beep( 0, AudioService::WF_SINE, 0.5, 1500, 50 );
-      audio.beep( 0, AudioService::WF_SINE, 0.4, 1600, 50 );
+    {
+      AudioPattern &ap( audio.pattern(0) );
+
+      // channel, wave, volume, pitch, ms
+
+      ap.beep( AudioService::WF_SINE, 1.0, 1000, 50 );
+      ap.beep( AudioService::WF_SINE, 0.9, 1100, 50 );
+      ap.beep( AudioService::WF_SINE, 0.8, 1200, 50 );
+      ap.beep( AudioService::WF_SINE, 0.7, 1300, 50 );
+      ap.beep( AudioService::WF_SINE, 0.6, 1400, 50 );
+      ap.beep( AudioService::WF_SINE, 0.5, 1500, 50 );
+      ap.beep( AudioService::WF_SINE, 0.4, 1600, 50 );
     }
 
-    //audio.beep( 1.0, 1000, 4000 );
+    // channel, pattern
+    audio.play( 0, 0 );
+    audio.play( 0, 0 );
+    audio.play( 0, 0 );
+    audio.play( 0, 0 );
+    audio.play( 0, 0 );
 
     audio.start();
 

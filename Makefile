@@ -1,7 +1,7 @@
 
 EXE=test
 GPP=g++
-OBJ=main.o audio-exception.o audio-tone.o audio-service.o audio-channel.o
+OBJ=main.o audio-exception.o audio-tone.o audio-service.o audio-channel.o audio-pattern.o
 CFLAGS=-Wall -g
 LIBS=-lportaudio
 

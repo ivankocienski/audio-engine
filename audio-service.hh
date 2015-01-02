@@ -8,6 +8,7 @@
 #include <portaudio.h>
 
 #include "audio-channel.hh"
+#include "audio-pattern.hh"
 
 //#include "audio.hh"
 
@@ -20,8 +21,7 @@ private:
 
   std::vector<audio_waveform_t> m_waveforms;
 
-  //std::vector<float> m_sine_wave;
-
+  std::vector<AudioPattern> m_patterns;
 
 public:
 
@@ -45,7 +45,9 @@ public:
 
   bool is_busy();
 
-  void beep( int, int, float, int, int );
+  //void beep( int, int, float, int, int );
+  AudioPattern& pattern(int);
+  void play(int, int);
 
   friend int audio_callback( const void*, void*, unsigned long, PaStreamCallbackTimeInfo*, const PaStreamCallbackFlags, void*);
 

@@ -2,9 +2,11 @@
 todo:
 
 * tone fade in / out
-- organize
-- channels
-- sound 'sprites'
+* organize
+* channels
+- sound 'sprites' patterns
+- on demand queue - no preloading
+- master volume
 - looping / stopping
 - clean up code
   - namespace
