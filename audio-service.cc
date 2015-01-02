@@ -86,26 +86,25 @@ void AudioService::init() {
   
   const PaStreamInfo *stream_info = Pa_GetStreamInfo(m_stream);
   //if( !stream_info ) throw AudioException( "Pa_GetStreamInfo", 0 );
-  int sample_rate = stream_info->sampleRate; 
+  int m_sample_rate = stream_info->sampleRate; 
   
   for( int i = 0; i < WF_COUNT; i++ )
-    m_waveforms[i].resize(sample_rate);
+    m_waveforms[i].resize(m_sample_rate);
 
   float a_inc = (M_PI * 2.0) / stream_info->sampleRate;
   float ang   = 0;
 
   // TODO: use of iterators here?
-  for( int i = 0; i < sample_rate; i++ ) {
+  for( int i = 0; i < m_sample_rate; i++ ) {
     m_waveforms[WF_SINE  ][i] = sin(ang); 
-    m_waveforms[WF_SQUARE][i] = (i < (sample_rate / 2 )) ? -1 : 1;
+    m_waveforms[WF_SQUARE][i] = (i < (m_sample_rate / 2 )) ? -1 : 1;
     m_waveforms[WF_NOISE ][i] = sfrand();
     ang += a_inc;
   }
 
   m_channels.resize(1);
-  m_channels[0].init( sample_rate );
 
-  cout << "sample_rate=" << sample_rate << endl;
+  cout << "m_sample_rate=" << m_sample_rate << endl;
 }
 
 void AudioService::start() {
@@ -130,7 +129,20 @@ bool AudioService::is_busy() {
   return false;
 }
 
-void AudioService::beep( int ch, int wf, float vol, int pitch, int msec ) { 
-  m_channels[ch].beep( m_waveforms[wf], vol, pitch, msec );
+/* void AudioService::beep( int ch, int wf, float vol, int pitch, int msec ) { 
+ *   m_channels[ch].beep( m_waveforms[wf], vol, pitch, msec );
+ * }
+ */
+
+AudioPattern& AudioService::pattern(int i) {
+  m_patterns[i].init(m_sample_rate);
+  return m_patterns[i];
 }
 
+void AudioService::play( int ch, int pn ) {
+  m_channels[ch].play( m_patterns[pn] );
+}
+
+audio_waveform_t & AudioService::waveform( int w ) {
+  return m_waveforms[w];
+}

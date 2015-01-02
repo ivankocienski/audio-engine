@@ -23,6 +23,8 @@ private:
 
   std::vector<AudioPattern> m_patterns;
 
+  int m_sample_rate;
+
 public:
 
   enum { // waveform
@@ -45,6 +47,8 @@ public:
 
   bool is_busy();
 
+  audio_waveform_t & waveform( int );
+  
   //void beep( int, int, float, int, int );
   AudioPattern& pattern(int);
   void play(int, int);

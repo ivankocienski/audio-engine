@@ -20,13 +20,13 @@ int main( int arch, char** argv ) {
 
       // channel, wave, volume, pitch, ms
 
-      ap.beep( AudioService::WF_SINE, 1.0, 1000, 50 );
-      ap.beep( AudioService::WF_SINE, 0.9, 1100, 50 );
-      ap.beep( AudioService::WF_SINE, 0.8, 1200, 50 );
-      ap.beep( AudioService::WF_SINE, 0.7, 1300, 50 );
-      ap.beep( AudioService::WF_SINE, 0.6, 1400, 50 );
-      ap.beep( AudioService::WF_SINE, 0.5, 1500, 50 );
-      ap.beep( AudioService::WF_SINE, 0.4, 1600, 50 );
+      ap.beep( audio.waveform(AudioService::WF_SINE), 1.0, 1000, 50 );
+      ap.beep( audio.waveform(AudioService::WF_SINE), 0.9, 1100, 50 );
+      ap.beep( audio.waveform(AudioService::WF_SINE), 0.8, 1200, 50 );
+      ap.beep( audio.waveform(AudioService::WF_SINE), 0.7, 1300, 50 );
+      ap.beep( audio.waveform(AudioService::WF_SINE), 0.6, 1400, 50 );
+      ap.beep( audio.waveform(AudioService::WF_SINE), 0.5, 1500, 50 );
+      ap.beep( audio.waveform(AudioService::WF_SINE), 0.4, 1600, 50 );
     }
 
     // channel, pattern
