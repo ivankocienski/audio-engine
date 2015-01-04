@@ -4,15 +4,13 @@
 #include <list>
 
 #include "audio-common.hh"
-#include "audio-tone.hh"
-#include "audio-pattern.hh"
 
 class AudioChannel {
 private:
-  
-  std::list<AudioTone> m_tone_queue;
 
-  boost::shared_ptr<ToneCursor> m_cursor;
+  std::list<audio_pattern_buffer_t*> m_pattern_queue;
+
+  audio_pattern_buffer_t::iterator m_pattern_it;
 
 public:
 
@@ -23,8 +21,6 @@ public:
   bool is_busy();
   void start();
 
-  //void beep( audio_waveform_t&, float, int, int );
-
-  void play( AudioPattern& );
+  void play( audio_pattern_buffer_t& );
 };
 

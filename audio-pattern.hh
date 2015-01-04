@@ -3,23 +3,41 @@
 
 #include <list>
 
-#include "audio-tone.hh"
+#include "audio-oscillator-base.hh"
+#include "audio-common.hh"
+
+class AudioPatternTone {
+private:
+
+  const audio_oscillator_ptr m_osc;
+  float m_volume;
+  int   m_pitch;
+  float m_msec;
+
+public:
+
+  AudioPatternTone( const audio_oscillator_ptr, float, int, int );
+  
+  int sample_len();
+  void render( audio_pattern_buffer_t&, int );
+};
 
 class AudioPattern {
 private:
 
-  std::list<AudioTone> m_tones;
+  typedef std::list<AudioPatternTone> tone_list_t;
 
-  int m_sample_rate;
+  tone_list_t m_tones;
+
+  int m_tones_length; 
 
 public:
 
   AudioPattern();
 
-  void init(int);
+  void beep( const audio_oscillator_ptr, float, int, int );
 
-  void beep( audio_waveform_t&, float, int, int );
-
-  std::list<AudioTone>& tones();
+  void render( audio_pattern_buffer_t& );
+  
 };
 

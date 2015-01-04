@@ -1,15 +1,10 @@
 
-#include <stdio.h>
-#include <math.h>
-
 #include "audio-exception.hh"
 #include "audio-common.hh"
 #include "audio-service.hh"
+#include "audio-sine-oscillator.hh"
 
 using namespace std;
-
-
-
 
 const int AudioService::c_sample_rate  = 44100;
 const int AudioService::c_num_channels = 1;
@@ -81,30 +76,21 @@ void AudioService::init() {
 
   CATCH_PA_ERROR( "Pa_OpenDefaultStream", err ); 
 
-  m_waveforms.resize(WF_COUNT);
+  //m_waveforms.resize(WF_COUNT);
 
+  m_patterns.resize(16);
+  m_channels.resize(1);
   
   const PaStreamInfo *stream_info = Pa_GetStreamInfo(m_stream);
   //if( !stream_info ) throw AudioException( "Pa_GetStreamInfo", 0 );
-  int m_sample_rate = stream_info->sampleRate; 
+  int sample_rate = stream_info->sampleRate; 
   
-  for( int i = 0; i < WF_COUNT; i++ )
-    m_waveforms[i].resize(m_sample_rate);
+  m_oscillators.push_back( boost::shared_ptr<AudioOscillatorBase>( (AudioOscillatorBase *)(new AudioSineOscillator( sample_rate ))));
 
-  float a_inc = (M_PI * 2.0) / stream_info->sampleRate;
-  float ang   = 0;
+  //m_oscillators.push_back( boost::shared_ptr( (AudioOscillatorBase *)(new AudioSquareOscillator( m_sample_rate ))));
+  //m_oscillators.push_back( boost::shared_ptr( (AudioOscillatorBase *)(new AudioSineOscillator( m_sample_rate ))));
 
-  // TODO: use of iterators here?
-  for( int i = 0; i < m_sample_rate; i++ ) {
-    m_waveforms[WF_SINE  ][i] = sin(ang); 
-    m_waveforms[WF_SQUARE][i] = (i < (m_sample_rate / 2 )) ? -1 : 1;
-    m_waveforms[WF_NOISE ][i] = sfrand();
-    ang += a_inc;
-  }
-
-  m_channels.resize(1);
-
-  cout << "m_sample_rate=" << m_sample_rate << endl;
+  cout << "m_sample_rate=" << sample_rate << endl;
 }
 
 void AudioService::start() {
@@ -129,20 +115,14 @@ bool AudioService::is_busy() {
   return false;
 }
 
-/* void AudioService::beep( int ch, int wf, float vol, int pitch, int msec ) { 
- *   m_channels[ch].beep( m_waveforms[wf], vol, pitch, msec );
- * }
- */
-
-AudioPattern& AudioService::pattern(int i) {
-  m_patterns[i].init(m_sample_rate);
-  return m_patterns[i];
-}
-
 void AudioService::play( int ch, int pn ) {
   m_channels[ch].play( m_patterns[pn] );
 }
 
-audio_waveform_t & AudioService::waveform( int w ) {
-  return m_waveforms[w];
+const audio_oscillator_ptr & AudioService::oscillator( int i ) {
+  return m_oscillators[i];
+}
+
+void AudioService::set_pattern( int id, AudioPattern& ap ) {
+  ap.render( m_patterns[id] );
 }

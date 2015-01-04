@@ -16,17 +16,21 @@ int main( int arch, char** argv ) {
 
     
     {
-      AudioPattern &ap( audio.pattern(0) );
+      AudioPattern ap;
 
       // channel, wave, volume, pitch, ms
 
-      ap.beep( audio.waveform(AudioService::WF_SINE), 1.0, 1000, 50 );
-      ap.beep( audio.waveform(AudioService::WF_SINE), 0.9, 1100, 50 );
-      ap.beep( audio.waveform(AudioService::WF_SINE), 0.8, 1200, 50 );
-      ap.beep( audio.waveform(AudioService::WF_SINE), 0.7, 1300, 50 );
-      ap.beep( audio.waveform(AudioService::WF_SINE), 0.6, 1400, 50 );
-      ap.beep( audio.waveform(AudioService::WF_SINE), 0.5, 1500, 50 );
-      ap.beep( audio.waveform(AudioService::WF_SINE), 0.4, 1600, 50 );
+      //BEEP( ap, WF_SINE, 1.0, 1000, 50 );
+
+      ap.beep( audio.oscillator(AudioService::WF_SINE), 1.0, 1000, 50 );
+      ap.beep( audio.oscillator(AudioService::WF_SINE), 0.9, 1100, 50 );
+      ap.beep( audio.oscillator(AudioService::WF_SINE), 0.8, 1200, 50 );
+      ap.beep( audio.oscillator(AudioService::WF_SINE), 0.7, 1300, 50 );
+      ap.beep( audio.oscillator(AudioService::WF_SINE), 0.6, 1400, 50 );
+      ap.beep( audio.oscillator(AudioService::WF_SINE), 0.5, 1500, 50 );
+      ap.beep( audio.oscillator(AudioService::WF_SINE), 0.4, 1600, 50 );
+
+      audio.set_pattern( 0, ap );
     }
 
     // channel, pattern

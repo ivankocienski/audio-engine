@@ -1,16 +1,13 @@
 
 #pragma once
 
-#include <list>
 #include <vector>
-#include <boost/shared_ptr.hpp>
 
 #include <portaudio.h>
 
 #include "audio-channel.hh"
 #include "audio-pattern.hh"
-
-//#include "audio.hh"
+#include "audio-oscillator-base.hh"
 
 class AudioService {
 private:
@@ -19,11 +16,11 @@ private:
 
   std::vector<AudioChannel> m_channels;
 
-  std::vector<audio_waveform_t> m_waveforms;
+  // oscillators
+  std::vector< audio_oscillator_ptr > m_oscillators;
 
-  std::vector<AudioPattern> m_patterns;
-
-  int m_sample_rate;
+  // pattern buffers
+  std::vector< audio_pattern_buffer_t > m_patterns;
 
 public:
 
@@ -31,7 +28,8 @@ public:
     WF_SINE,
     WF_SQUARE,
     WF_NOISE,
-    WF_COUNT
+    WF_SAWTOOTH,
+    WF_TRIANGLE
   };
 
   static const int c_sample_rate;
@@ -47,12 +45,11 @@ public:
 
   bool is_busy();
 
-  audio_waveform_t & waveform( int );
-  
-  //void beep( int, int, float, int, int );
-  AudioPattern& pattern(int);
   void play(int, int);
+  void set_pattern( int, AudioPattern& );
 
+  const audio_oscillator_ptr & oscillator(int);
+  
   friend int audio_callback( const void*, void*, unsigned long, PaStreamCallbackTimeInfo*, const PaStreamCallbackFlags, void*);
 
   int callback( float*, unsigned long);

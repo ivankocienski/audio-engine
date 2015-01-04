@@ -1,43 +1,33 @@
 
-#include <iostream>
-using namespace std;
-
 #include "audio-channel.hh"
 
 AudioChannel::AudioChannel() { }
 
 float AudioChannel::next_value() {
 
-  if( !m_cursor ) return 0;
+  if( !is_busy() ) return 0;
 
-  float value = m_cursor->next_value();
+  float value = *m_pattern_it;
 
-  if( m_cursor->is_at_end() ) {
+  m_pattern_it++;
 
-    m_tone_queue.pop_front();
-    if(!m_tone_queue.size()) {
-      m_cursor.reset();
-      return 0;
-    }
-
-    m_cursor = m_tone_queue.front().cursor_start();
-
-    cout << "next tone" << endl;
+  if( m_pattern_it == m_pattern_queue.front()->end() ) {
+    m_pattern_queue.pop_front();
+    start();
   }
 
   return value;
 }
 
 bool AudioChannel::is_busy() {
-  return (bool)m_cursor;
+  return m_pattern_queue.size() > 0;
 }
 
 void AudioChannel::start() {
-  m_cursor = m_tone_queue.front().cursor_start();
+  if( is_busy() )
+    m_pattern_it = m_pattern_queue.front()->begin();
 }
 
-void AudioChannel::play( AudioPattern& ap ) {
-  
-  for( list<AudioTone>::iterator it = ap.tones().begin(); it != ap.tones().end(); it++ )
-    m_tone_queue.push_back(*it);
+void AudioChannel::play( audio_pattern_buffer_t& pb ) { 
+  m_pattern_queue.push_back( &pb );
 }

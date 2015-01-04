@@ -6,11 +6,11 @@ todo:
 * tone fade in / out
 * organize
 * channels
-- sound 'sprites' patterns
+* sound 'sprites' patterns
 - on demand queue - no preloading
 - master volume
 - looping / stopping
 - clean up code
   - namespace
-  - synth code. blugh. oscillators?
+  * synth code. blugh. oscillators?
 
