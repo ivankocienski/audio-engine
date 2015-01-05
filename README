@@ -1,0 +1,32 @@
+
+Audio Engine
+============
+
+A audio synth engine aimed at retro games. Sound is defined in patterns and 
+can be queued up on multiple channels.
+
+
+
+To use
+======
+
+Copy files starting with audio- into your project, add them to your build
+system and add port audio as library dependency. Then initialize, define
+your beepy beeps and play then back. See main.cc for example.
+
+
+
+Requires
+- port audio
+- SDL for demo
+
+
+
+Features
+
+- port audio backend (could be ported to any simple sound API, like SDL or alsa)
+- different wave forms (sine, square, noise, saw, triangle)
+- volume and pitch configurable for each tone
+- multiple channels can play sounds independently
+- per channel looped playback
+

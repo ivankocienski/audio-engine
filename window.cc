@@ -4,6 +4,11 @@
 #include "window.hh"
 #include <SDL/SDL_image.h>
 
+/* This file was culled from a different project so I could
+ * get a UI up and running quickly. You don't need it to
+ * use the engine and is probably best if you don't even
+ * look at it at all. */
+
 Window::Window() {
   m_screen = NULL;
   m_active = false;
