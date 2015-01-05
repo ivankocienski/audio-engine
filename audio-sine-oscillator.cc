@@ -18,7 +18,7 @@ AudioSineOscillator::AudioSineOscillator(int sr) : AudioOscillatorBase(sr) {
 
 float AudioSineOscillator::next_value() {
 
-  float v = m_wave[m_position];
+  float v = m_wave[m_position] * m_volume;
 
   m_position += m_pitch;
   if(m_position > m_sample_rate) m_position -= m_sample_rate;

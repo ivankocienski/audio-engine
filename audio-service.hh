@@ -14,6 +14,8 @@ private:
 
   PaStream *m_stream;
 
+  float m_volume;
+  
   std::vector<AudioChannel> m_channels;
 
   // oscillators
@@ -46,9 +48,12 @@ public:
   bool is_busy();
 
   void play(int, int);
+  void loop(int, int);
   void set_pattern( int, AudioPattern& );
+  void set_volume(float);
 
   const audio_oscillator_ptr & oscillator(int);
+  AudioChannel& channel(int);
   
   friend int audio_callback( const void*, void*, unsigned long, PaStreamCallbackTimeInfo*, const PaStreamCallbackFlags, void*);
 

@@ -7,8 +7,8 @@ todo:
 * organize
 * channels
 * sound 'sprites' patterns
-- on demand queue - no preloading
-- master volume
+* on demand queue - no preloading
+* master volume
 - looping / stopping
 - clean up code
   - namespace

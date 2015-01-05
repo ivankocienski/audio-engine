@@ -1,4 +1,6 @@
 
+#include <string.h>
+
 #include "audio-exception.hh"
 #include "audio-common.hh"
 #include "audio-service.hh"
@@ -20,6 +22,7 @@ int audio_callback( const void* in_b, void* out_b, unsigned long len, const PaSt
 
 AudioService::AudioService() {
   m_stream = NULL;
+  m_volume = 1.0;
 }
 
 AudioService::~AudioService() {
@@ -32,28 +35,27 @@ AudioService::~AudioService() {
 
 int AudioService::callback( float* buffer, unsigned long buffer_size ) {
 
-  while( buffer_size ) {
+  memset( buffer, 0, buffer_size * sizeof(float));
 
-    float accumulator = 0;
-
-    for( vector<AudioChannel>::iterator it = m_channels.begin(); it != m_channels.end(); it++ ) 
-      accumulator += it->next_value();
-
-    *buffer = accumulator;
-
-    buffer++;
-    buffer_size--;
+  for( vector<AudioChannel>::iterator it = m_channels.begin(); it != m_channels.end(); it++ ) {
+    it->render_to( buffer, buffer_size, m_volume );
   }
 
+/*   
+ *   while( buffer_size ) {
+ * 
+ *     float accumulator = 0;
+ * 
+ *       accumulator += it->next_value();
+ * 
+ *     *buffer = accumulator * m_volume;
+ * 
+ *     buffer++;
+ *     buffer_size--;
+ *   }
+ */
+
   return 0;
-}
-
-float frand() {
-  return (float)rand() / (float)RAND_MAX;
-}
-
-float sfrand() {
-  return 1.0 - (2.0 * frand());
 }
 
 void AudioService::init() {
@@ -79,7 +81,7 @@ void AudioService::init() {
   //m_waveforms.resize(WF_COUNT);
 
   m_patterns.resize(16);
-  m_channels.resize(1);
+  m_channels.resize(2);
   
   const PaStreamInfo *stream_info = Pa_GetStreamInfo(m_stream);
   //if( !stream_info ) throw AudioException( "Pa_GetStreamInfo", 0 );
@@ -119,10 +121,22 @@ void AudioService::play( int ch, int pn ) {
   m_channels[ch].play( m_patterns[pn] );
 }
 
+void AudioService::loop( int ch, int pn ) {
+  m_channels[ch].loop( m_patterns[pn] );
+}
+
 const audio_oscillator_ptr & AudioService::oscillator( int i ) {
   return m_oscillators[i];
 }
 
 void AudioService::set_pattern( int id, AudioPattern& ap ) {
   ap.render( m_patterns[id] );
+}
+
+void AudioService::set_volume( float v ) {
+  m_volume = v;
+}
+
+AudioChannel& AudioService::channel(int i) {
+  return m_channels[i];
 }
