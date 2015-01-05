@@ -5,6 +5,10 @@
 #include "audio-common.hh"
 #include "audio-service.hh"
 #include "audio-sine-oscillator.hh"
+#include "audio-square-oscillator.hh"
+#include "audio-noise-oscillator.hh"
+#include "audio-saw-oscillator.hh"
+#include "audio-triangle-oscillator.hh"
 
 using namespace std;
 
@@ -23,6 +27,7 @@ int audio_callback( const void* in_b, void* out_b, unsigned long len, const PaSt
 AudioService::AudioService() {
   m_stream = NULL;
   m_volume = 1.0;
+  m_paused = false;
 }
 
 AudioService::~AudioService() {
@@ -37,27 +42,16 @@ int AudioService::callback( float* buffer, unsigned long buffer_size ) {
 
   memset( buffer, 0, buffer_size * sizeof(float));
 
+  if( m_paused ) return 0;
+
   for( vector<AudioChannel>::iterator it = m_channels.begin(); it != m_channels.end(); it++ ) {
     it->render_to( buffer, buffer_size, m_volume );
   }
 
-/*   
- *   while( buffer_size ) {
- * 
- *     float accumulator = 0;
- * 
- *       accumulator += it->next_value();
- * 
- *     *buffer = accumulator * m_volume;
- * 
- *     buffer++;
- *     buffer_size--;
- *   }
- */
-
   return 0;
 }
 
+#define MAKE_OSCILLATOR( in, with ) (in).push_back( boost::shared_ptr<AudioOscillatorBase>( (AudioOscillatorBase *)(new with( sample_rate ))));
 void AudioService::init() {
 
   PaError err;
@@ -87,10 +81,12 @@ void AudioService::init() {
   //if( !stream_info ) throw AudioException( "Pa_GetStreamInfo", 0 );
   int sample_rate = stream_info->sampleRate; 
   
-  m_oscillators.push_back( boost::shared_ptr<AudioOscillatorBase>( (AudioOscillatorBase *)(new AudioSineOscillator( sample_rate ))));
-
-  //m_oscillators.push_back( boost::shared_ptr( (AudioOscillatorBase *)(new AudioSquareOscillator( m_sample_rate ))));
-  //m_oscillators.push_back( boost::shared_ptr( (AudioOscillatorBase *)(new AudioSineOscillator( m_sample_rate ))));
+  MAKE_OSCILLATOR( m_oscillators, AudioSineOscillator );
+  MAKE_OSCILLATOR( m_oscillators, AudioSquareOscillator );
+  MAKE_OSCILLATOR( m_oscillators, AudioNoiseOscillator );
+  MAKE_OSCILLATOR( m_oscillators, AudioSawOscillator );
+  MAKE_OSCILLATOR( m_oscillators, AudioTriangleOscillator );
+  MAKE_OSCILLATOR( m_oscillators, AudioOscillatorBase ); // silence
 
   cout << "m_sample_rate=" << sample_rate << endl;
 }

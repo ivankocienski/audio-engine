@@ -9,7 +9,7 @@ todo:
 * sound 'sprites' patterns
 * on demand queue - no preloading
 * master volume
-- looping / stopping
+* looping / stopping
 - clean up code
   - namespace
   * synth code. blugh. oscillators?

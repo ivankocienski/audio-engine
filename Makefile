@@ -12,6 +12,10 @@ OBJ=\
 	audio-pattern.o \
 	audio-oscillator-base.o \
 	audio-sine-oscillator.o \
+	audio-square-oscillator.o \
+	audio-noise-oscillator.o \
+	audio-saw-oscillator.o \
+	audio-triangle-oscillator.o \
 	window.o
 
 all: $(OBJ)

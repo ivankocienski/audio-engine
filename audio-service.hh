@@ -15,6 +15,7 @@ private:
   PaStream *m_stream;
 
   float m_volume;
+  bool  m_paused;
   
   std::vector<AudioChannel> m_channels;
 
@@ -31,7 +32,8 @@ public:
     WF_SQUARE,
     WF_NOISE,
     WF_SAWTOOTH,
-    WF_TRIANGLE
+    WF_TRIANGLE,
+    WF_SILENCE
   };
 
   static const int c_sample_rate;
@@ -51,6 +53,7 @@ public:
   void loop(int, int);
   void set_pattern( int, AudioPattern& );
   void set_volume(float);
+  void pause(bool);
 
   const audio_oscillator_ptr & oscillator(int);
   AudioChannel& channel(int);
