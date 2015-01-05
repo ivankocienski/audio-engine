@@ -2,8 +2,8 @@
 Audio Engine
 ============
 
-A audio synth engine aimed at retro games. Sound is defined in patterns and 
-can be queued up on multiple channels.
+A audio synthesizer engine aimed at retro games. Sound is defined in patterns 
+and can be queued up on multiple channels.
 
 
 
@@ -11,8 +11,8 @@ To use
 ======
 
 Copy files starting with audio- into your project, add them to your build
-system and add port audio as library dependency. Then initialize, define
-your beepy beeps and play then back. See main.cc for example.
+system and add port-audio as library dependency. Then initialize, define
+your beepy beeps and play them back. See main.cc for example.
 
 
 
